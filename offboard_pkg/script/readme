@@ -1,0 +1,4 @@
+1.main.py和utils.py为之前的设计的角速度控制指令
+2.obs.py和utils_obs.py为修改后的速度控制指令
+3.在真机飞行测试时，需要对“roslaunch offboard_pkg rysx.launch”文件中相应的节点进行修改
+4.在仿真实验时，需要对simulation包下的launch文件的sim_gazebo.launch文件中“<node name="main_node" pkg="offboard_pkg" type="main.py" output="screen" />”节点进行相应修改
