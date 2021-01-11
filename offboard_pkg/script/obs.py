@@ -50,7 +50,7 @@ home_dx, home_dy = 0, 0
 depth = -1
 original_offset = np.array([0, 0, 0])
 
-sphere_pos_x, sphere_pos_y, sphere_pos_z = -0.08, 1.5, 2.35  #-0.065, 7, 2.43 
+sphere_pos_x, sphere_pos_y, sphere_pos_z = -0.08, 7.2, 2.35  #-0.065, 7, 2.43 
 sphere_vx, sphere_vy, sphere_vz = -1, 0, 0
 
 sphere_feb_pos = PoseStamped()
@@ -162,8 +162,8 @@ def sphere_control():
     #     sphere_pos_x = mav_pos[0] + 3
     #     sphere_pos_y = mav_pos[1] - 0.4#- 0.8
     #     sphere_pos_z = 2.5 #mav_pos[2]  
-    if ch7 == 1:
-        sphere_pos_y += 0.1 * sphere_vx
+    # if ch7 == 1:
+    #     sphere_pos_y += 0.1 * sphere_vx
 
     # if abs(mav_pos[1] - sphere_pos_y) > 1:
     #     sphere_pos_z = mav_pos[2]
@@ -290,13 +290,11 @@ if __name__=="__main__":
     cnt = -1
     while not rospy.is_shutdown():
         cnt += 1
-        sphere_control()
-        # if MODE == "Simulation" and ch8 == 1 and mav_pos[1] > 6:
-        #     sphere_control()
-        #     rate.sleep()
-        if ch7 == 1:
-            print("Enter obstacle control mode")
-
+        # sphere_control()
+        if MODE == "Simulation" and ch8 != 0 and mav_pos[1] > 6:
+            sphere_control()
+            rate.sleep()
+            
         if ch8 == 0:
             if current_state.mode == "OFFBOARD":
                 resp1 = set_mode_client(0, "POSCTL")	# (uint8 base_mode, string custom_mode)
@@ -316,7 +314,7 @@ if __name__=="__main__":
         pos_info = {"mav_pos": mav_pos, "mav_vel": mav_vel, "mav_R": mav_R, "R_bc": np.array([[0,0,1], [1,0,0], [0,1,0]]), 
                     "mav_original_angle": mav_original_angle, "Initial_pos": Initial_pos}
         cmd = u.DockingControllerFusion(pos_info, pos_i)
-        target_pos = np.array([0, 0, 2.5])   #initialize pos:[0, 12, 2.5]
+        target_pos = np.array([0, 12, 2.5])   #initialize pos:[0, 12, 2.5]
         feb_pos = np.array([mav_pos[0], mav_pos[1], mav_pos[2]])
         cmd_vel = u.pos_control(target_pos,feb_pos,0.8,1)
         cmd_yaw = u.yaw_control(mav_original_angle[0], mav_yaw, 0.5, 0.8)
