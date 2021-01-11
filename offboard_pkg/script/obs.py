@@ -28,6 +28,7 @@ from rflysim_ros_pkg.msg import Obj
 current_state = State()
 ch5, ch6, ch7, ch8, ch9, ch11, ch14 = 0, 0, 0, 0, 1, 1, 1
 is_initialize_mav, is_initialize_vel, is_initialize_rc, is_initialize_img = False, False, False, False
+
 ch20 = 0
 mav_pos = [0, 0, 0]
 mav_original_angle = [0, 0, 0]
@@ -49,7 +50,7 @@ home_dx, home_dy = 0, 0
 depth = -1
 original_offset = np.array([0, 0, 0])
 
-sphere_pos_x, sphere_pos_y, sphere_pos_z = 0.2, 2, 1.6 #4, 0.2, 2.1 #3, 0, 2.2
+sphere_pos_x, sphere_pos_y, sphere_pos_z = -0.08, 1.5, 2.35  #-0.065, 7, 2.43 
 sphere_vx, sphere_vy, sphere_vz = -1, 0, 0
 
 sphere_feb_pos = PoseStamped()
@@ -103,9 +104,9 @@ def call(event):
     global ch5, ch6, ch7, ch8, ch9, ch20
     k = event.keysym
     if k == "m":
-        ch6 = 1
+        ch6 = 0
     elif k == "h":
-        ch7 = 1
+        ch20 = 1
     elif k == "o":
         ch8 = 1
     elif k == "p":
@@ -113,9 +114,9 @@ def call(event):
     elif k == "c":
         ch9 = (ch9 + 1) % 2
     elif k == "a":
-        ch20 = 1
+        ch7 = 1
     elif k == "b":
-        ch20 = 0
+        ch7 = 0
     time.sleep(0.02)
 
 def read_kbd_input():
@@ -161,8 +162,8 @@ def sphere_control():
     #     sphere_pos_x = mav_pos[0] + 3
     #     sphere_pos_y = mav_pos[1] - 0.4#- 0.8
     #     sphere_pos_z = 2.5 #mav_pos[2]  
-    # if ch20 == 1:
-    #     sphere_pos_y += 0.1 * sphere_vx
+    if ch7 == 1:
+        sphere_pos_y += 0.1 * sphere_vx
 
     # if abs(mav_pos[1] - sphere_pos_y) > 1:
     #     sphere_pos_z = mav_pos[2]
@@ -173,6 +174,7 @@ def sphere_control():
         # print("real_no:{}".format(real_no))
     real_no = np.array([sphere_pos_x - mav_pos[0], sphere_pos_y - mav_pos[1],\
                         sphere_pos_z - mav_pos[2]])
+    print("distance:{}".format(np.linalg.norm(real_no)))
     real_no /= np.linalg.norm(real_no)
     if pos_i[1] != 0:
         print("real_no:{}".format(real_no))
@@ -234,6 +236,8 @@ if __name__=="__main__":
     rospy.Subscriber("mavros/state", State, state_cb)
     rospy.Subscriber("mavros/local_position/pose", PoseStamped, mav_pose_cb)
     rospy.Subscriber("mavros/local_position/velocity_local", TwistStamped, mav_vel_cb)
+    #HIL使用遥控器进行控制
+    is_HIL = True
     if MODE == "RealFlight":
         rospy.Subscriber("mavros/rc/in", RCIn, rcin_cb)
     elif MODE == "Simulation":
@@ -244,9 +248,11 @@ if __name__=="__main__":
         rospy.Subscriber("tracker/depth", PoseStamped, depth_cb)
 
         # rospy.Subscriber("gazebo/model_states", ModelStates, sphere_cb)
-
-        inputThread = threading.Thread(target=read_kbd_input)
-        inputThread.start()
+        if is_HIL == True:
+            rospy.Subscriber("mavros/rc/in", RCIn, rcin_cb)
+        else:
+            inputThread = threading.Thread(target=read_kbd_input)
+            inputThread.start()
     else:
         raise Exception("Invalid MODE!", MODE)
     rospy.Subscriber("tracker/pos_image", Float32MultiArray, pos_image_cb)
@@ -284,10 +290,12 @@ if __name__=="__main__":
     cnt = -1
     while not rospy.is_shutdown():
         cnt += 1
-        
-        if MODE == "Simulation" and ch8 == 1:
-            sphere_control()
-            rate.sleep()
+        sphere_control()
+        # if MODE == "Simulation" and ch8 == 1 and mav_pos[1] > 6:
+        #     sphere_control()
+        #     rate.sleep()
+        if ch7 == 1:
+            print("Enter obstacle control mode")
 
         if ch8 == 0:
             if current_state.mode == "OFFBOARD":
@@ -307,8 +315,44 @@ if __name__=="__main__":
         
         pos_info = {"mav_pos": mav_pos, "mav_vel": mav_vel, "mav_R": mav_R, "R_bc": np.array([[0,0,1], [1,0,0], [0,1,0]]), 
                     "mav_original_angle": mav_original_angle, "Initial_pos": Initial_pos}
-        print("pos_i: {}".format(pos_i))
         cmd = u.DockingControllerFusion(pos_info, pos_i)
+        target_pos = np.array([0, 0, 2.5])   #initialize pos:[0, 12, 2.5]
+        feb_pos = np.array([mav_pos[0], mav_pos[1], mav_pos[2]])
+        cmd_vel = u.pos_control(target_pos,feb_pos,0.8,1)
+        cmd_yaw = u.yaw_control(mav_original_angle[0], mav_yaw, 0.5, 0.8)
+        if ch7 == 1:
+            #识别到图像才进行角速度控制
+            if pos_i[1] != 0: 
+                command.twist.linear.x = cmd[0]
+                command.twist.linear.y = cmd[1]
+                command.twist.linear.z = cmd[2]
+                command.twist.angular.z = cmd[3]
+                # local_vel_pub.publish(command)
+            else:
+                command.twist.linear.x = cmd_vel[0]
+                command.twist.linear.y = cmd_vel[1]
+                command.twist.linear.z = cmd_vel[2]
+                command.twist.angular.z = cmd_yaw
+                # local_vel_pub.publish(command)    
+            print("thrust control")
+            # print("mav_yaw: {}".format(mav_yaw))
+            # print("mav_vel: {}".format(mav_vel))
+            # print("mav_pitch: {}".format(mav_pitch))
+            # print("mav_roll: {}".format(mav_roll))
+        else:
+            mav_original_angle = [mav_yaw, mav_pitch, mav_roll]
+            Initial_pos = mav_pos
+            command.twist.linear.x = 0
+            command.twist.linear.y = 0
+            command.twist.linear.z = 0
+            command.twist.angular.z = 0
+            # local_vel_pub.publish(command)
+            print("velocity control")
+        print("mav_yaw: {}".format(mav_yaw))
+        print("mav_pitch: {}".format(mav_pitch))
+        print("mav_roll: {}".format(mav_roll))
+        print("mav_pos: {}".format(mav_pos))
+        '''
         if ch20 == 1:
             # sphere_control(pose_msg)
             # if cnt % 10 == 0:
@@ -336,7 +380,7 @@ if __name__=="__main__":
             # print("mav_yaw: {}".format(mav_yaw))
             # print("mav_pitch: {}".format(mav_pitch))
             # print("mav_roll: {}".format(mav_roll))
-
+        '''
         local_vel_pub.publish(command)
         rate.sleep()
     rospy.spin()

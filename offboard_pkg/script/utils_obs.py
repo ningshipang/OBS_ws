@@ -43,8 +43,8 @@ def matrix(B, C):
 
 class Utils(object):
     def __init__(self, params):
-        self.WIDTH = 640
-        self.HEIGHT = 480
+        self.WIDTH = 720
+        self.HEIGHT = 405
 
         self.circlex = None
         self.circley = None
@@ -68,7 +68,7 @@ class Utils(object):
 
         self.kp_vd = 2.0 #the p_control about desire velicoty
 
-        self.kvod = 1 #the p_control about desire velicoty by matrix
+        self.kvod = 2.5 #the p_control about desire velicoty by matrix initial value:1
 
 
     def distance(self, circle):
@@ -113,6 +113,9 @@ class Utils(object):
         n_eo = pos_info["mav_R"].dot(n_bo)
         if pos_i[1] != 0:
             print("n_eo:{}".format(n_eo))
+            print("theta: {}".format(n_eo.dot(n_ec)))
+            im = [(pos_i[0]-self.u0), -(pos_i[1]-self.v0)]
+            print("pos_i: {}".format(im))
         # print("n_ec:{}".format(n_ec))
         # n_original = self.R_origin.dot(n_co)
         # n_pri = pos_info["mav_R"].dot(n_original)
@@ -131,13 +134,43 @@ class Utils(object):
         matrix_I = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         vI = matrix_I - vd1
         vod = (1 - self.change) * self.kvod * vI.T.dot(n_ec)
+        print("vod:{}".format(vod))
         # if pos_i[1] != 0:
         #     print("vod:{}".format(vod))
         #desire velicoty
         # self.vd = self.kp_vd * (vod - pos_info["mav_vel"])
+        v_rd_b = np.array([1, 0, 0])
+        v_rd_e = pos_info["mav_R"].dot(v_rd_b)
+        print("vr:{}".format(v_rd_e))
 
-        return [vod[0], vod[1], vod[2], 0]
+        v = vod + self.change * v_rd_e
+        print("v:{}".format(v))
+        return [v[0], v[1], v[2], 0]
+
+    #期望位置，反馈位置，位置比例系数，速读限幅
+    def pos_control(self, target_pos, feb_pos, kp, sat_vel):
+        err_pos = target_pos - feb_pos
+        cmd_pos_vel = self.sat(kp * err_pos, sat_vel)
+        # cmd_pos_vel[2] = 
+        return [cmd_pos_vel[0], cmd_pos_vel[1], cmd_pos_vel[2]]
         
+    #期望位置，反馈位置，反馈角度，偏航角控制比例系数，角速度限幅
+    def yaw_control(self, target_yaw, feb_yaw, kp_yaw, sat_yaw):
+        #机头指向目标点的位置
+        # desire_yaw = math.atan2(target_pos[1] - feb_pos[1], target_pos[0] - feb_pos[0])
+        dlt_yaw = self.minAngleDiff(target_yaw, feb_yaw)
+        cmd_yaw = self.Saturation(kp_yaw * dlt_yaw, sat_yaw, -sat_yaw)
+        return cmd_yaw
+
+    def minAngleDiff(self, a, b):
+        diff = a - b
+        if diff < 0:
+            diff += 2*np.pi
+        if diff < np.pi:
+            return diff
+        else:
+            return diff - 2*np.pi
+
     # return a safty vz
     def SaftyZ(self, vz, satf):
         if vz > satf:
@@ -153,6 +186,13 @@ class Utils(object):
                 a[i] = up
             elif a[i] < down:
                 a[i] = down
+        return a
+
+    def Saturation(self, a, up, down):
+        if a > up:
+            a = up
+        elif a < down:
+            a = down
         return a
 
     def PID_Control(self):

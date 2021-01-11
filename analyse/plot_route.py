@@ -38,8 +38,9 @@ def main(args):
         plt.figure(i)
         plt.xlim(-361, 361)
         plt.ylim(-203, 203)
-        for v in range(nvar):
-            plt.plot(datas[v][0], datas[v][1], linewidth=3)
+        plt.plot(datas[v][0], datas[v][1], linewidth=3)
+        # for v in range(nvar):
+        #     plt.plot(datas[v][0], datas[v][1], linewidth=3)
             # if i < len(datas[v]):
             #     plt.plot(index[v], datas[v][i], label="{}[{}]".format(args.variable[v], i))
             # else:
