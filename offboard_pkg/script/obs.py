@@ -21,7 +21,7 @@ from utils_obs import Utils
 from Queue import Queue
 # from gazebo_msgs.msg import ModelState, ModelStates
 # import tf
-from rflysim_ros_pkg.msg import Obj
+#from rflysim_ros_pkg.msg import Obj
 
 
 # Simulation of RealFlight
@@ -217,7 +217,7 @@ def angleLimiting(a):
 
 
 if __name__=="__main__":
-    setting_file = open(os.path.join(os.path.expanduser('~'),"njq/OBS_ws/src","settings.json"))
+    setting_file = open(os.path.join(os.path.expanduser('~'),"OBS_ws/src","settings.json"))
     setting = json.load(setting_file)
     print(json.dumps(setting, indent=4))
 
@@ -259,8 +259,8 @@ if __name__=="__main__":
     local_vel_pub = rospy.Publisher('mavros/setpoint_velocity/cmd_vel', TwistStamped, queue_size=10)
     print("Publisher and Subscriber Created")
 
-    rospy.wait_for_service("tracker/save_img")
-    save_client = rospy.ServiceProxy("tracker/save_img", Empty)
+    # rospy.wait_for_service("tracker/save_img")
+    # save_client = rospy.ServiceProxy("tracker/save_img", Empty)
     rospy.wait_for_service("mavros/cmd/arming")
     arming_client = rospy.ServiceProxy('mavros/cmd/arming', CommandBool)
     rospy.wait_for_service("mavros/set_mode")
@@ -270,7 +270,7 @@ if __name__=="__main__":
     
     # ensure the connection 
     while(not current_state.connected):
-        print(current_state.connected)
+        print("connected: {}".format(current_state.connected))
         rate.sleep()
 
     for i in range(100):
