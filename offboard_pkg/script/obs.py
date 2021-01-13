@@ -314,7 +314,11 @@ if __name__=="__main__":
         pos_info = {"mav_pos": mav_pos, "mav_vel": mav_vel, "mav_R": mav_R, "R_bc": np.array([[0,0,1], [1,0,0], [0,1,0]]), 
                     "mav_original_angle": mav_original_angle, "Initial_pos": Initial_pos}
         cmd = u.DockingControllerFusion(pos_info, pos_i)
-        target_pos = np.array([Initial_pos[0], Initial_pos[1], Initial_pos[2]])   #initialize pos:[0, 12, 2.5]
+
+        target_distance = 0
+        dx = target_distance*np.cos(mav_original_angle[0])
+        dy = target_distance*np.sin(mav_original_angle[0])
+        target_pos = np.array([Initial_pos[0] + dx, Initial_pos[1] + dy, Initial_pos[2]])   #initialize pos:[0, 12, 2.5]
         feb_pos = np.array([mav_pos[0], mav_pos[1], mav_pos[2]])
         cmd_vel = u.pos_control(target_pos,feb_pos,0.8,1)
         cmd_yaw = u.yaw_control(mav_original_angle[0], mav_yaw, 0.5, 0.8)

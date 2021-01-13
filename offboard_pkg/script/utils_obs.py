@@ -56,9 +56,14 @@ class Utils(object):
         #realsense: fx:632.9640658678117  fy:638.2668942402212
         self.f = 632 #346.6  # 这个需要依据实际情况进行设定flength=(width/2)/tan(hfov/2),不同仿真环境以及真机实验中需要依据实际情况进行修改
         #camrea frame to mavros_body frame
+        '''
         self.R_cb = np.array([[1,0,0],\
                              [0,0,1],\
                              [0,-1,0]])
+        '''
+        self.R_cb = np.array([[1,0,0],\
+                             [0,0,1],\
+                             [0,1,0]])
         self.R_origin = np.array([[0,0,1],\
                              [1,0,0],\
                              [0,1,0]])
@@ -108,6 +113,7 @@ class Utils(object):
         n_ec = pos_info["mav_R"].dot(n_bc)
         
         #calacute the no
+        # n_co = np.array([pos_i[0] - self.u0, pos_i[1] - self.v0, self.f], dtype=np.float64)
         n_co = np.array([pos_i[0] - self.u0, pos_i[1] - self.v0, self.f], dtype=np.float64)
         n_co /= np.linalg.norm(n_co)
         n_bo = self.R_cb.dot(n_co)
