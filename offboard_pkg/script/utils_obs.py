@@ -43,8 +43,8 @@ def matrix(B, C):
 
 class Utils(object):
     def __init__(self, params):
-        self.WIDTH = 720
-        self.HEIGHT = 405
+        self.WIDTH = 640 #simulation 720
+        self.HEIGHT = 480 #simulation 405
 
         self.circlex = None
         self.circley = None
@@ -53,7 +53,8 @@ class Utils(object):
         self.v0 = self.h/2
         self.x0 = self.u0
         self.y0 = self.v0
-        self.f = 554.26  # 这个需要依据实际情况进行设定flength=(width/2)/tan(hfov/2),不同仿真环境以及真机实验中需要依据实际情况进行修改
+        #realsense: fx:632.9640658678117  fy:638.2668942402212
+        self.f = 632 #346.6  # 这个需要依据实际情况进行设定flength=(width/2)/tan(hfov/2),不同仿真环境以及真机实验中需要依据实际情况进行修改
         #camrea frame to mavros_body frame
         self.R_cb = np.array([[1,0,0],\
                              [0,0,1],\
