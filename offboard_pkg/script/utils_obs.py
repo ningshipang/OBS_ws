@@ -63,7 +63,7 @@ class Utils(object):
         '''
         self.R_cb = np.array([[1,0,0],\
                              [0,0,1],\
-                             [0,1,0]])
+                             [0,-1,0]])
         self.R_origin = np.array([[0,0,1],\
                              [1,0,0],\
                              [0,1,0]])
