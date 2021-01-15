@@ -12,12 +12,13 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <fstream>
 #include <opencv/cv.hpp>
+// #include <time.h>
+// #include <string>
 
 #include "../YEAD/EllipseDetectorYaed.h"
 
 using namespace cv;
 using namespace std;
-
 
 int color_count; 
 static int radius_path = 40;
@@ -30,6 +31,9 @@ float sigmay;
 Point3d colorBlock3;
 float average_radius = 0;
 ros::Publisher centerPointPub;
+VideoWriter vw;
+VideoWriter blv;
+Mat black_frame;
 
 float pos_i[5]; // i_x, i_y, bbox_w, bbox_h, confidence
 cv_bridge::CvImagePtr depth_ptr;
@@ -72,6 +76,7 @@ Point3d frameToCoordinate(int colortype,  Mat frame, int lowh, int lows, int low
 	// Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(9, 9));
     // morphologyEx(imgThresholded, imgThresholded, MORPH_CLOSE, kernel);
 	imshow("red block", imgThresholded);
+    
 	
     // ros::Time begin = ros::Time::now();
 	vector<Vec3f> circles;
@@ -157,6 +162,7 @@ Point3d yeadCircleCalc(Mat frame, int lowh, int lows, int lowv, int highh, int h
     // ros::Time end3 = ros::Time::now();
     // cout<< "------------------time cost3 :"<< end3-begin <<endl;
 	imshow("red block", imgThresholded);
+    black_frame = imgThresholded;
     
     // Parameters Settings (Sect. 4.2)
     int		iThLength = 6;
@@ -280,6 +286,8 @@ Point3d yeadCircleCalc(Mat frame, int lowh, int lows, int lowv, int highh, int h
 
         return xy;
     }
+    
+
         
 }
 
@@ -318,6 +326,11 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &imgae_msg)
 	msg.data.push_back(confidence);   // confidence
 	centerPointPub.publish(msg);
 	cout << "centerxy: " << colorBlock3 << endl;
+
+    vw.write(imgCor);
+    cout << "Save success!" << endl;
+    // blv.write(black_frame);
+    // cout << "black success!" << endl;
 
     /*2021.01.13  no depth graph
 	// center_point, left_point and right_point
@@ -455,6 +468,21 @@ int main(int argc, char** argv)
     pub_left = nh.advertise<geometry_msgs::PoseStamped>("tracker/depth_left", 1);
     pub_right = nh.advertise<geometry_msgs::PoseStamped>("tracker/depth_right", 1);
     centerPointPub = nh.advertise<std_msgs::Float32MultiArray>("tracker/pos_image",1);
+    
+    // vw.open("/home/t/OBS_ws/src/tracker_pkg/video/out.avi", //路径
+    // outfilename = mv_name.c_str();
+    vw.open("/home/t/OBS_ws/src/tracker_pkg/video/out.avi", //路径
+		VideoWriter::fourcc('X', '2', '6', '4'), //编码格式
+		10, //帧率
+		Size(640,480),  //尺寸
+		true);
+
+    // blv.open("/home/t/OBS_ws/src/tracker_pkg/video/black.avi", //路径
+	// 	VideoWriter::fourcc('M', 'P', '4', '2'), //编码格式
+	// 	15, //帧率
+	// 	Size(640,480),  //尺寸
+	// 	true);//false
+    // cout << "VideoWriter open success!" << endl;
 	//订阅图像
 	ros::spin();
 

@@ -74,7 +74,7 @@ class Utils(object):
 
         self.kp_vd = 2.0 #the p_control about desire velicoty
 
-        self.kvod = 2.5 #the p_control about desire velicoty by matrix initial value:1
+        self.kvod = 15 #the p_control about desire velicoty by matrix initial value:1   2.5
 
 
     def distance(self, circle):
