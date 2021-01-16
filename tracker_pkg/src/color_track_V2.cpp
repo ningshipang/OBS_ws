@@ -168,8 +168,9 @@ Point3d yeadCircleCalc(Mat frame, int lowh, int lows, int lowv, int highh, int h
     cv::Mat3b output_frame;
 
     output_frame = frame.clone();
+    double if_area = sqrt(2*m.m00);
 
-    if(m.m00 != 0)
+    if(if_area > 30)
     {
         centexy.x = m.m10/m.m00;
         centexy.y = m.m01/m.m00;
@@ -375,7 +376,10 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &imgae_msg)
 
 	// calc center point
 	// colorBlock3 = frameToCoordinate(3, imgCor, 170, 150, 10, 181, 256, 256);
-    colorBlock3 = yeadCircleCalc(imgCor, 170, 200, 10, 181, 256, 256);
+
+    // colorBlock3 = yeadCircleCalc(imgCor, 170, 200, 10, 181, 256, 256); original parameter
+    // colorBlock3 = yeadCircleCalc(imgCor, 160, 170, 160, 181, 256, 256); qiqiu
+    colorBlock3 = yeadCircleCalc(imgCor, 160, 170, 80, 181, 256, 256);
     // imshow("imgCor block", imgCor);
     // cvWaitKey(1);
     
