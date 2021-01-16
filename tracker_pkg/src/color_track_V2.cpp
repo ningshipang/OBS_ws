@@ -12,7 +12,7 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <fstream>
 #include <opencv/cv.hpp>
-// #include <time.h>
+#include <math.h>
 // #include <string>
 
 #include "../YEAD/EllipseDetectorYaed.h"
@@ -148,13 +148,60 @@ Point3d yeadCircleCalc(Mat frame, int lowh, int lows, int lowv, int highh, int h
 	merge(hsvSplit, imgHSV);
 	Mat1b imgThresholded;
 	inRange(imgHSV, Scalar(lowh, lows, lowv), Scalar(highh, highs, highv), imgThresholded); //Threshold the image
+    imshow("red block", imgThresholded);//imgThresholded
+    cvWaitKey(1);
+    blv.write(imgThresholded);
+    // cout << "dilate success"<< endl;
+    
     Mat element;
     element = getStructuringElement(MORPH_ELLIPSE, Size(3, 3));
+    
     // Point anchor = Point
     Mat dirImage;
-    dilate(imgThresholded, dirImage, element);//, Point(-1.-1), 2);//, BORDER_CONSTANT);
-    imshow("dilate block", dirImage);
-    cout << "dilate success"  << endl;
+    Point anchor = Point(-1,-1);
+    dilate(imgThresholded, dirImage, element, anchor, 2, BORDER_CONSTANT);
+    // imshow("dilate block", dirImage);
+    // cvWaitKey(1);
+    Moments m = moments(dirImage,true);
+    Point centexy(0,0);
+    double area;
+    cv::Mat3b output_frame;
+
+    output_frame = frame.clone();
+
+    if(m.m00 != 0)
+    {
+        centexy.x = m.m10/m.m00;
+        centexy.y = m.m01/m.m00;
+        area = sqrt(2*m.m00);
+        confidence = 1;
+
+        circle(output_frame, centexy, 3, Scalar(0, 255, 0), -1, 4, 0);
+        // circle(output_frame, Point(320,240), 3, Scalar(0, 255, 0), -1, 4, 0);
+        circle(output_frame, Point(320,240), 4, Scalar(255, 0, 0), -1, 5, 0);
+        imshow("output_frame",output_frame);
+        cvWaitKey(1);
+        vw.write(output_frame);
+    }
+    else
+    {
+        centexy.x = 0;
+        centexy.y = 0;
+        area = 0;
+        confidence = 0;
+
+        circle(output_frame, Point(320,240), 4, Scalar(255, 0, 0), -1, 5, 0);
+        imshow("output_frame",output_frame);
+        cvWaitKey(1);
+        vw.write(output_frame);
+    }
+    
+
+    xy.x=centexy.x;
+    xy.y=centexy.y;
+    xy.z=area;
+    return xy;
+    // cout << "dilate success"<< endl;
 
     // ros::Time end = ros::Time::now();
     // cout<< "------------------time cost :"<< end-begin <<endl;
@@ -169,7 +216,7 @@ Point3d yeadCircleCalc(Mat frame, int lowh, int lows, int lowv, int highh, int h
     // morphologyEx(imgThresholded, imgThresholded, MORPH_CLOSE, kernel);
     // ros::Time end3 = ros::Time::now();
     // cout<< "------------------time cost3 :"<< end3-begin <<endl;
-	imshow("red block", imgThresholded);
+	
     // black_frame = imgThresholded;
     // blv.write(imgThresholded);
     // cout << "black success!" << endl;
@@ -329,6 +376,8 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &imgae_msg)
 	// calc center point
 	// colorBlock3 = frameToCoordinate(3, imgCor, 170, 150, 10, 181, 256, 256);
     colorBlock3 = yeadCircleCalc(imgCor, 170, 200, 10, 181, 256, 256);
+    // imshow("imgCor block", imgCor);
+    // cvWaitKey(1);
     
     // ros::Time end_image2 = ros::Time::now();
     // cout<< "------------------time cost2 :"<< end_image2-begin_image <<endl;
@@ -471,7 +520,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &imgae_msg)
 
 int main(int argc, char** argv)
 {
-	ros::init(argc,argv,"color_tracker");
+	ros::init(argc,argv,"color_tracker_V2");
     ros::NodeHandle nh;
 	ros::Time::init();
 
@@ -486,17 +535,17 @@ int main(int argc, char** argv)
     
     // vw.open("/home/t/OBS_ws/src/tracker_pkg/video/out.avi", //路径
     // outfilename = mv_name.c_str();
-    // vw.open("/home/t/OBS_ws/src/tracker_pkg/video/out.avi", //路径
-	// 	VideoWriter::fourcc('X', '2', '6', '4'), //编码格式
-	// 	10, //帧率
-	// 	Size(640,480),  //尺寸
-	// 	true);
+    vw.open("/home/t/OBS_ws/src/tracker_pkg/video/out.avi", //路径
+		VideoWriter::fourcc('X', '2', '6', '4'), //编码格式
+		10, //帧率
+		Size(640,480),  //尺寸
+		true);
 
-    // blv.open("/home/t/OBS_ws/src/tracker_pkg/video/black.avi", //路径
-	// 	VideoWriter::fourcc('X', '2', '6', '4'), //编码格式
-	// 	10, //帧率
-	// 	Size(640,480),  //尺寸
-	// 	false);//false
+    blv.open("/home/t/OBS_ws/src/tracker_pkg/video/black.avi", //路径
+		VideoWriter::fourcc('X', '2', '6', '4'), //编码格式
+		10, //帧率
+		Size(640,480),  //尺寸
+		false);//false
     cout << "VideoWriter open success!" << endl;
 	//订阅图像
 	ros::spin();
