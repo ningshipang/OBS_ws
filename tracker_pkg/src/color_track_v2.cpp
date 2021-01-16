@@ -85,8 +85,8 @@ Point3d frameToCoordinate(int colortype,  Mat frame, int lowh, int lows, int low
 					3, //累加器分辨率
 					20, //两园间最小距离
 					160, // canny高阈值
-					80, //最小通过数  80
-					30, 300 );  //最小和最大半径  (30,300)
+					80, //最小通过数
+					30, 300 );  //最小和最大半径
 	test++;
 	cout<<"------->circles.size() :"<<circles.size()<<endl;
 
@@ -148,6 +148,14 @@ Point3d yeadCircleCalc(Mat frame, int lowh, int lows, int lowv, int highh, int h
 	merge(hsvSplit, imgHSV);
 	Mat1b imgThresholded;
 	inRange(imgHSV, Scalar(lowh, lows, lowv), Scalar(highh, highs, highv), imgThresholded); //Threshold the image
+    Mat element;
+    element = getStructuringElement(MORPH_ELLIPSE, Size(3, 3));
+    // Point anchor = Point
+    Mat dirImage;
+    dilate(imgThresholded, dirImage, element);//, Point(-1.-1), 2);//, BORDER_CONSTANT);
+    imshow("dilate block", dirImage);
+    cout << "dilate success"  << endl;
+
     // ros::Time end = ros::Time::now();
     // cout<< "------------------time cost :"<< end-begin <<endl;
 	
@@ -163,10 +171,10 @@ Point3d yeadCircleCalc(Mat frame, int lowh, int lows, int lowv, int highh, int h
     // cout<< "------------------time cost3 :"<< end3-begin <<endl;
 	imshow("red block", imgThresholded);
     // black_frame = imgThresholded;
-    blv.write(imgThresholded);
-    cout << "black success!" << endl;
+    // blv.write(imgThresholded);
+    // cout << "black success!" << endl;
     
-    
+    /*2021.01.16
     // Parameters Settings (Sect. 4.2)
     int		iThLength = 6;
     float	fThObb = 4.0f;
@@ -294,7 +302,7 @@ Point3d yeadCircleCalc(Mat frame, int lowh, int lows, int lowv, int highh, int h
 
         return xy;
     }
-    
+    */
         
 }
 
@@ -478,17 +486,17 @@ int main(int argc, char** argv)
     
     // vw.open("/home/t/OBS_ws/src/tracker_pkg/video/out.avi", //路径
     // outfilename = mv_name.c_str();
-    vw.open("/home/t/OBS_ws/src/tracker_pkg/video/out.avi", //路径
-		VideoWriter::fourcc('X', '2', '6', '4'), //编码格式
-		10, //帧率
-		Size(640,480),  //尺寸
-		true);
+    // vw.open("/home/t/OBS_ws/src/tracker_pkg/video/out.avi", //路径
+	// 	VideoWriter::fourcc('X', '2', '6', '4'), //编码格式
+	// 	10, //帧率
+	// 	Size(640,480),  //尺寸
+	// 	true);
 
-    blv.open("/home/t/OBS_ws/src/tracker_pkg/video/black.avi", //路径
-		VideoWriter::fourcc('X', '2', '6', '4'), //编码格式
-		10, //帧率
-		Size(640,480),  //尺寸
-		false);//false
+    // blv.open("/home/t/OBS_ws/src/tracker_pkg/video/black.avi", //路径
+	// 	VideoWriter::fourcc('X', '2', '6', '4'), //编码格式
+	// 	10, //帧率
+	// 	Size(640,480),  //尺寸
+	// 	false);//false
     cout << "VideoWriter open success!" << endl;
 	//订阅图像
 	ros::spin();

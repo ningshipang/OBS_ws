@@ -266,7 +266,7 @@ if __name__=="__main__":
     rospy.wait_for_service("mavros/set_mode")
     set_mode_client = rospy.ServiceProxy('mavros/set_mode', SetMode)
     print("Clients Created")
-    rate = rospy.Rate(20)
+    rate = rospy.Rate(50)#50
     
     # ensure the connection 
     while(not current_state.connected):
@@ -320,7 +320,7 @@ if __name__=="__main__":
         dy = target_distance*np.sin(mav_original_angle[0])
         target_pos = np.array([Initial_pos[0] + dx, Initial_pos[1] + dy, Initial_pos[2]])   #initialize pos:[0, 12, 2.5]
         feb_pos = np.array([mav_pos[0], mav_pos[1], mav_pos[2]])
-        cmd_vel = u.pos_control(target_pos,feb_pos,0.8,1)
+        cmd_vel = u.pos_control(target_pos,feb_pos,0.8,1)  #1
         cmd_yaw = u.yaw_control(mav_original_angle[0], mav_yaw, 0.5, 0.8)
 
         vel_body = np.array([0, 1, 0])

@@ -74,7 +74,7 @@ class Utils(object):
 
         self.kp_vd = 2.0 #the p_control about desire velicoty
 
-        self.kvod = 15 #the p_control about desire velicoty by matrix initial value:1   2.5
+        self.kvod = 2.5 #the p_control about desire velicoty by matrix initial value:1   2.5
 
 
     def distance(self, circle):
@@ -140,7 +140,7 @@ class Utils(object):
         vd1 = matrix(n_eo, n_eo)
         matrix_I = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         vI = matrix_I - vd1
-        vod = (1 - self.change) * self.kvod * vI.T.dot(n_ec)
+        vod = (1/(1.001 - n_eo.dot(n_ec)))*(1 - self.change) * self.kvod * vI.T.dot(n_ec)
         print("vod:{}".format(vod))
         # if pos_i[1] != 0:
         #     print("vod:{}".format(vod))
@@ -151,6 +151,10 @@ class Utils(object):
         print("vr:{}".format(v_rd_e))
 
         v = vod + self.change * v_rd_e
+        # v = self.sat(v,10)
+        v[0] = self.sat(v[0],10)
+        v[1] = self.sat(v[1],10)
+        v[2] = self.sat(v[2],3)
         print("v:{}".format(v))
         return [v[0], v[1], v[2], 0]
 
