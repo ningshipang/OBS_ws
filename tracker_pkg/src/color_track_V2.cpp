@@ -541,13 +541,13 @@ int main(int argc, char** argv)
     // outfilename = mv_name.c_str();
     vw.open("/home/t/OBS_ws/src/tracker_pkg/video/out.avi", //路径
 		VideoWriter::fourcc('X', '2', '6', '4'), //编码格式
-		10, //帧率
+		15, //帧率
 		Size(640,480),  //尺寸
 		true);
 
     blv.open("/home/t/OBS_ws/src/tracker_pkg/video/black.avi", //路径
 		VideoWriter::fourcc('X', '2', '6', '4'), //编码格式
-		10, //帧率
+		15, //帧率
 		Size(640,480),  //尺寸
 		false);//false
     cout << "VideoWriter open success!" << endl;

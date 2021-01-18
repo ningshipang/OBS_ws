@@ -320,8 +320,8 @@ if __name__=="__main__":
         dy = target_distance*np.sin(mav_original_angle[0])
         target_pos = np.array([Initial_pos[0] + dx, Initial_pos[1] + dy, Initial_pos[2]])   #initialize pos:[0, 12, 2.5]
         feb_pos = np.array([mav_pos[0], mav_pos[1], mav_pos[2]])
-        cmd_vel = u.pos_control(target_pos,feb_pos,0.8,1)  #1
-        cmd_yaw = u.yaw_control(mav_original_angle[0], mav_yaw, 0.5, 0.8)
+        cmd_vel = u.pos_control(target_pos,feb_pos,1.0,1.5)  #1
+        cmd_yaw = u.yaw_control(mav_original_angle[0], mav_yaw, 0.8, 0.8)
 
         vel_body = np.array([0, 1, 0])
         vel_e = mav_R.dot(vel_body)
@@ -358,6 +358,7 @@ if __name__=="__main__":
         print("mav_pitch: {}".format(mav_pitch))
         print("mav_roll: {}".format(mav_roll))
         print("mav_pos: {}".format(mav_pos))
+        print("mav_vel: {}".format(mav_vel))
         '''
         if ch20 == 1:
             # sphere_control(pose_msg)

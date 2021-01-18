@@ -152,9 +152,9 @@ class Utils(object):
 
         v = vod + self.change * v_rd_e
         # v = self.sat(v,10)
-        v[0] = self.sat(v[0],10)
-        v[1] = self.sat(v[1],10)
-        v[2] = self.sat(v[2],3)
+        v[0] = self.sat(4*v[0],5)
+        v[1] = self.sat(4*v[1],5)
+        v[2] = self.sat(v[2],2.5)
         print("v:{}".format(v))
         return [v[0], v[1], v[2], 0]
 
