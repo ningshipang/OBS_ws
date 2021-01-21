@@ -21,7 +21,7 @@ from utils_obs import Utils
 from Queue import Queue
 # from gazebo_msgs.msg import ModelState, ModelStates
 # import tf
-#from rflysim_ros_pkg.msg import Obj
+from rflysim_ros_pkg.msg import Obj
 
 
 # Simulation of RealFlight
@@ -237,7 +237,7 @@ if __name__=="__main__":
     rospy.Subscriber("mavros/local_position/pose", PoseStamped, mav_pose_cb)
     rospy.Subscriber("mavros/local_position/velocity_local", TwistStamped, mav_vel_cb)
     #HIL使用遥控器进行控制
-    is_HIL = True
+    is_HIL = False
     if MODE == "RealFlight":
         rospy.Subscriber("mavros/rc/in", RCIn, rcin_cb)
     elif MODE == "Simulation":
@@ -315,7 +315,7 @@ if __name__=="__main__":
                     "mav_original_angle": mav_original_angle, "Initial_pos": Initial_pos}
         cmd = u.DockingControllerFusion(pos_info, pos_i)
 
-        target_distance = 0
+        target_distance = 12
         dx = target_distance*np.cos(mav_original_angle[0])
         dy = target_distance*np.sin(mav_original_angle[0])
         target_pos = np.array([Initial_pos[0] + dx, Initial_pos[1] + dy, Initial_pos[2]])   #initialize pos:[0, 12, 2.5]

@@ -48,7 +48,7 @@ def image_callback(data):
 
 if __name__ == '__main__':
     global params
-    setting_file = open(os.path.join(os.path.expanduser('~'),"njq/OBS_ws/src","settings.json"))
+    setting_file = open(os.path.join(os.path.expanduser('~'),"OBS_ws/src","settings.json"))
     setting = json.load(setting_file)
     params = setting["Simulation"]
 
